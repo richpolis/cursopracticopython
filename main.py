@@ -1,21 +1,34 @@
-import sys
+import os
+import csv
+from dataclasses import field
 
-clients = [
-    {
-        'name': 'Pablo', 
-        'company': 'Google', 
-        'email': 'pablo@gmail.com', 
-        'position': 'Software enginner'
-    }, 
-    {
-        'name': 'Ricardo', 
-        'company': 'Facebook', 
-        'email': 'ricardo@garagecoders.net', 
-        'position': 'Data engineer'
-    }
-]
-
+clients = []
 welcome_client = True
+# CLIENT_TABLE = '/home/richpolis/Proyectos/python/CursoPracticoPython/clients.csv'
+CLIENT_TABLE = './clients.csv'
+CLIENT_SCHEMA = ['name', 'company', 'email', 'position']
+
+def _initialize_client_from_storage():
+    global clients
+    with open(CLIENT_TABLE, mode='r') as f:
+        reader = csv.DictReader(f, fieldnames=CLIENT_SCHEMA)
+
+        for row in reader:
+            clients.append(row)
+
+
+def _save_clients_to_storage():
+    global clients
+
+    tmp_table_name = f'{CLIENT_TABLE}.tmp'
+    with open(tmp_table_name, mode='w') as f:
+        writer = csv.DictWriter(f, fieldnames=CLIENT_SCHEMA)
+        writer.writerows(clients)
+
+        os.remove(CLIENT_TABLE)
+        os.rename(tmp_table_name, CLIENT_TABLE)
+
+
 
 def create_client(client_email: str = None) -> bool:
     global clients
@@ -167,7 +180,9 @@ def _get_client_field(field_name:str, current_value: str = '') -> str:
 
 
 if __name__ == '__main__':
-    
+
+    _initialize_client_from_storage()
+
     while True:
         _print_welcome()
         command = input()
@@ -201,6 +216,9 @@ if __name__ == '__main__':
         elif command == 'E':
             print('Exit to the program')
             break
+    
+    # exit program, but save first
+    _save_clients_to_storage()
 
 
 
